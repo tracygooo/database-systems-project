@@ -18,6 +18,7 @@
 \begin{document}
 \maketitle
 \section{Team Members}
+As listed below, we have four members in our team.
 \begin{itemize}
 	\item Erik Du, duy4@rpi.edu
 	\item Jinghua Feng, fengj3@rpi.edu
@@ -26,8 +27,28 @@
 \end{itemize}
 \section{Datasets}
 \subsection{The location of the data}
-\subsection{ Any relevant license information}
-\subsection{ How you plan to join the two datasets }
+In our project, we will explore two datasets about New York City: Motor Vehicle Collisions and Daily Climate Data.
+The Motor Vehicle Collisions can be found at NYC OpenData,\url{https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95}. While the climate data can be accessed from National Centers for Environmental Information, \url{https://www.ncdc.noaa.gov/cdo-web/}.
 
+\subsection{ Dataset description }
+The dataset of Motor Vehicle Collisions is updated daily and there may exist multiple tuples on each day. The whole dataset contains 1.67 millions of rows and 29 attributes. The attributes we may incorporate in our project are 
+(Crash Date, Crash Time, Location, Number of Persons Injured, Number of Persons Killed, Vehicle type).
+\newline\newline
+\noindent The weather dataset is also updated daily and it has one tuple each day. The size of this dataset depends on the date range of crash dataset we explore. The main attributes include (Date, Max Temperature, Min Temperature, Precipitation(Snow, Rain), Cloudiness).
+
+\subsection{ Any relevant license information}
+As shown on website \url{https://opendata.cityofnewyork.us/overview/}, the access and use of crash dataset should follow all of the Terms of Use of NYC.gov \url{https://www1.nyc.gov/home/terms-of-use.page} and Privacy Policy \url{https://www1.nyc.gov/home/privacy-policy.page}. 
+%\newline \newline
+\noindent Weather dataset is available at no charge and can be either viewed online and downloaded with format of "csv". The access requires a basic registration for an API token as shown on website \url{https://www.ncdc.noaa.gov/cdo-web/faq#webServicesSection}.
+
+\subsection{ How you plan to join the two datasets }
+The two datasets share the same attribute "Date", thus can be conditionally joined by this attribute. The aspects we could explore may include
+\begin{itemize}
+	\item Are traffic crashes related with weather conditions such as precipitation, cloudiness?
+	\item Compare crash frequency that occur on weekend, weekdays, holiday, etc.
+	\item Compare the amount of precipitation accumulate in different seasons 
+	\item ...
+\end{itemize}
 
 \end{document}
+\grid
