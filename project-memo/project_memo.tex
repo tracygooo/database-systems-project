@@ -42,13 +42,19 @@ As shown on website \url{https://opendata.cityofnewyork.us/overview/}, the acces
 \noindent Weather dataset is available at no charge and can be either viewed online and downloaded with format of "csv". The access requires a basic registration for an API token as shown on website \url{https://www.ncdc.noaa.gov/cdo-web/faq#webServicesSection}.
 
 \subsection{ How you plan to join the two datasets }
-The two datasets share the same attribute "Date", thus can be conditionally joined by this attribute. The aspects we could explore may include
+The two datasets share the same attribute "Date", thus can be conditionally joined by this attribute. The aspects we could explore the datasets may include
 \begin{itemize}
 	\item Are traffic crashes related with weather conditions such as precipitation, cloudiness?
 	\item Compare crash frequency that occur on weekend, weekdays, holiday, etc.
 	\item Compare the amount of precipitation accumulate in different seasons 
-	\item ...
 \end{itemize}
 
+\section{Work Plan}
+04/06/2020 - 04/12/2020: Datasets downloading and setup database, python virtual environment properly. Complete \path{ datasets.txt }, \path{retreive_data.py} and \path{requirements.txt}
+
+\noindent 04/13/2020 - 04/19/2020: Define schemas properly and load data into Postgres database. Complete \path{schema.sql} and \path{load_data.py}
+
+\noindent 04/20/2020 - 04/26/2020: Explore the data and relations. Complete \path{application.py}
+
+\noindent 04/27/2020 - 05/07/2020: Create User Interface, record the videos and submit the project. Complete \path{README.md}
 \end{document}
-\grid
