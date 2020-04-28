@@ -17,8 +17,8 @@ f_url.close()
 # --- Download datasets
 output_fnames = [ 'crash.csv' , 'weather.csv' ]
 for i in range( len(urls) ) :
+    # Remove newline at the end
     url = urls[i].splitlines()[0]
     print( 'Downloading {}'.format( output_fnames[i] ) )
-    print( data_path + output_fnames[i] )
     wget.download( url , data_path + output_fnames[i] )
     print( '\n{} Finished'.format( output_fnames[i] ) )
