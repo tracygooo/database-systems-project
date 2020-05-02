@@ -11,11 +11,10 @@ os.makedirs( data_path )
 # --- Read urls in
 fname = "./datasets.txt"
 f_url = open( fname , 'r' )
-urls = f_url.readlines()
+urls = [line.rstrip() for line in f_url.readlines()]
 f_url.close()
 
 # --- Download datasets
-# output_fnames = [ 'crash.csv' , 'weather.csv' ]
 output_fnames = [ 'crash.csv' , 'covid19.csv' , 'weather.csv' ]
 
 for i in range( len(urls) ) :
