@@ -1,6 +1,7 @@
 import os
 import wget
 import shutil
+from datetime import datetime
 
 # --- Create folder for datasets, destory if existing
 data_path = 'datasets/'
@@ -15,11 +16,12 @@ urls = [line.rstrip() for line in f_url.readlines()]
 f_url.close()
 
 # --- Download datasets
-output_fnames = [ 'crash.csv' , 'covid19.csv' , 'weather.csv' ]
+output_fnames = [ 'covid.csv' , 'weather.csv' , 'crash.csv' ]
 
 for i in range( len(urls) ) :
+#for i in range( 0 , 2 ) :
     # Remove newline at the end
     url = urls[i].splitlines()[0]
-    print( 'Downloading {}'.format( output_fnames[i] ) )
+    print( "\n'{}' downloading: {}".format( output_fnames[i], datetime.now() ) )
     wget.download( url , data_path + output_fnames[i] )
-    print( '\n{} Finished'.format( output_fnames[i] ) )
+    print( "\n'{}' downloaded: {}".format( output_fnames[i] , datetime.now() ) )
