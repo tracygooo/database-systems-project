@@ -15,7 +15,9 @@ urls = f_url.readlines()
 f_url.close()
 
 # --- Download datasets
-output_fnames = [ 'crash.csv' , 'weather.csv' ]
+# output_fnames = [ 'crash.csv' , 'weather.csv' ]
+output_fnames = [ 'crash.csv' , 'covid19.csv' , 'weather.csv' ]
+
 for i in range( len(urls) ) :
     # Remove newline at the end
     url = urls[i].splitlines()[0]
