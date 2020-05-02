@@ -1,1 +1,2 @@
 https://data.cityofnewyork.us/api/views/h9gi-nx95/rows.csv?accessType=DOWNLOAD
+https://health.data.ny.gov/api/views/xdss-u53e/rows.csv?accessType=DOWNLOAD
