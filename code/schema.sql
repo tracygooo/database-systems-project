@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS covid19 ;
 CREATE TABLE covid19 (
     TestDate DATE, 
     County VARCHAR(20), 
@@ -5,4 +6,4 @@ CREATE TABLE covid19 (
     CumulativeNumberOfPositives INTEGER, 
     TotalNumberOfTestsPerformed INTEGER,
     CumulativeNumberOfTestsPerformed INTEGER
-)；
+);

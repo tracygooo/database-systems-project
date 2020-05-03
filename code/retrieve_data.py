@@ -16,7 +16,7 @@ urls = [line.rstrip() for line in f_url.readlines()]
 f_url.close()
 
 # --- Download datasets
-output_fnames = [ 'covid.csv' , 'weather.csv' , 'crash.csv' ]
+output_fnames = [ 'covid19.csv' , 'weather.csv' , 'crash.csv' ]
 
 for i in range( len(urls) ) :
 #for i in range( 0 , 2 ) :
