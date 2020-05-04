@@ -4,11 +4,13 @@ import psycopg2.extras
 import os
 from datetime import datetime
 
-# --- Create schema
-schema_fname = 'schema.sql'
+# --- Connect database 
 connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
 conn = psycopg2.connect( connect_string )
 cursor = conn.cursor()
+
+# --- Create schema
+schema_fname = 'schema.sql'
 create_schema = open( schema_fname , 'r' ).read()
 cursor.execute( create_schema )
 conn.commit()

@@ -26,7 +26,7 @@ CREATE TABLE weather (
     wind_direction_5min SMALLINT,--  WDF5
     wind_speed_2min NUMERIC(6,1),--  WSF2 
     wind_speed_5min NUMERIC(6,1),--  WSF5
-    is_foggy BOOLEAN , --WT01 - Fog, ice fog, or freezing fog (may include heavy fog)
+    is_foggy BOOLEAN DEFAULT FALSE , --WT01 - Fog, ice fog, or freezing fog (may include heavy fog)
     is_foggy_heavy BOOLEAN ,-- WT02 - Heavy fog or heaving freezing fog (not always distinguished from fog)
     is_thunder BOOLEAN , -- WT03
     is_ice_pellets BOOLEAN ,--  WT04 - Ice pellets, sleet, snow pellets, or small hail
@@ -97,13 +97,14 @@ CREATE TABLE injury (
 	number_of_injury INTEGER,
 	number_of_killed INTEGER,
 	PRIMARY KEY (COLLISION_ID)
-	);
+);
+
 INSERT INTO injury (
 	COLLISION_ID,
 	number_of_injury,
 	number_of_killed)
 SELECT COLLISION_ID, 
-		NUMBER_OF_PERSONS_INJURED+UMBER_OF_PEDESTRIANS_INJURED+NUMBER_OF_CYCLIST_INJURED+UMBER_OF_MOTORIST_INJURED,
+		NUMBER_OF_PERSONS_INJUR+UMBER_OF_PEDESTRIANS_INJURED+NUMBER_OF_CYCLIST_INJURED+UMBER_OF_MOTORIST_INJURED,
 		NUMBER_OF_PERSONS_KILLED+NUMBER_OF_PEDESTRIANS_KILLED+NUMBER_OF_CYCLIST_KILLED+NUMBER_OF_MOTORIST_KILLED
 FROM crash;
 
@@ -117,12 +118,12 @@ CREATE TABLE factor (
 	PRIMARY KEY(COLLISION_ID)
 	);
 INSERT INTO factor(
-	COLLISION_ID,
-	factor1,
-	factor2,
-	factor3,
-	factor4,
-	factor5)
+            COLLISION_ID,
+            factor1,
+            factor2,
+            factor3,
+            factor4,
+            factor5)
 SELECT COLLISION_ID,
 		CONTRIBUTING_FACTOR_VEHICLE_1,
 		CONTRIBUTING_FACTOR_VEHICLE_2,
