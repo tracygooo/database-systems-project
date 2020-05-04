@@ -84,38 +84,83 @@ FROM crash;
 
 --weather
 DROP TABLE IF EXISTS precipitation;
+DROP TABLE IF EXISTS weatherType ;
+DROP TABLE IF EXISTS wind;
 DROP TABLE IF EXISTS temperature ;
 CREATE TABLE temperature (
     measure_date DATE PRIMARY KEY,
     tmin INTEGER ,
     tmax INTEGER
 );
-INSERT INTO temperature(
-				measure_date,
-				tmin,
-				tmax
-				)
-SELECT measure_date,
-		tmin,
-		tmax
-FROM weather
-WHERE station = 'USW00094728';
+INSERT INTO temperature( measure_date, tmin, tmax)
+    SELECT measure_date,
+           tmin,
+           tmax
+    FROM weather
+    WHERE station = 'USW00094728';
 
 CREATE TABLE precipitation (
     measure_date DATE REFERENCES temperature,
     precipitation NUMERIC(6,1) ,
     PRIMARY KEY (measure_date)
 );
-INSERT INTO precipitation(
-				measure_date,
-				precipitation
-				)
+INSERT INTO precipitation( measure_date, precipitation)
 SELECT measure_date,
 		precipitation
 FROM weather
 WHERE station = 'USW00094728';
 
+CREATE TABLE weatherType (
+    measure_date DATE REFERENCES temperature,
+    is_foggy BOOLEAN , 
+    is_foggy_heavy BOOLEAN ,
+    is_thunder BOOLEAN ,
+    is_ice_pellets BOOLEAN ,
+    is_glaze_rime BOOLEAN ,
+    is_smoke_haze BOOLEAN , 
+    is_damaging_wind BOOLEAN ,
+    is_mist BOOLEAN , 
+    is_drizzle BOOLEAN , 
+    is_rainy BOOLEAN , 
+    is_snowy BOOLEAN , 
+    is_unknown_precipitation BOOLEAN ,  
+    is_freezing_foggy BOOLEAN 
+) ;
 
+INSERT INTO weatherType( measure_date, is_foggy , is_foggy_heavy , 
+                         is_thunder , is_ice_pellets , is_glaze_rime , 
+                         is_smoke_haze , is_damaging_wind , is_mist , 
+                         is_drizzle , is_rainy , is_snowy , 
+                         is_unknown_precipitation , is_freezing_foggy )
+    SELECT measure_date , is_foggy , is_foggy_heavy , is_thunder ,
+           is_ice_pellets , is_glaze_rime , is_smoke_haze , 
+           is_damaging_wind , is_mist , is_drizzle , 
+           is_rainy , is_snowy , is_unknown_precipitation , is_freezing_foggy 
+    FROM weather
+    WHERE station = 'USW00094728';
+
+CREATE TABLE wind(
+    measure_date DATE REFERENCES temperature,
+    ave_wind_speed NUMERIC( 6 , 1), -- AWND
+    wind_direction_2min SMALLINT,--  WDF2 
+    wind_direction_5min SMALLINT,--  WDF5
+    wind_speed_2min NUMERIC(6,1),--  WSF2 
+    wind_speed_5min NUMERIC(6,1) --  WSF5
+);
+
+INSERT INTO wind( 
+                  measure_date,
+                  ave_wind_speed , 
+                  wind_direction_2min ,
+                  wind_direction_5min ,
+                  wind_speed_2min ,
+                  wind_speed_5min
+				)
+    SELECT measure_date, ave_wind_speed , 
+           wind_direction_2min , wind_direction_5min ,
+           wind_speed_2min , wind_speed_5min
+FROM weather
+WHERE station = 'USW00094728';
 
 --covid19
 DROP TABLE IF EXISTS covid19;
@@ -135,9 +180,9 @@ SELECT TestDate,
 		county,
 		NewPositives,
 		TotalNumberOfTestsPerformed
-FROm covid;
+FROM covid;
 
 --drop temporary tables
-DROP TABLE covid;
-DROP TABLE crash;
-DROP TABLE weather;
+-- DROP TABLE covid;
+-- DROP TABLE crash;
+-- DROP TABLE weather;
