@@ -6,15 +6,27 @@ DROP TABLE IF EXISTS occurence;
 CREATE TABLE occurence (
 	COLLISION_ID VARCHAR(7) PRIMARY KEY,
 	crashdate DATE,
-	location VARCHAR(20)
+	REGION VARCHAR(20),
+	ZIP_CODE VARCHAR(5),
+	LATITUDE NUMERIC(10,5),
+	LONGITUDE NUMERIC(10,5),
+	LOCATION TEXT
 	);
 INSERT INTO occurence (
 	COLLISION_ID,
 	crashdate,
-	location)
+	REGION,
+	ZIP_CODE,
+	LATITUDE,
+	LONGITUDE,
+	LOCATION)
 SELECT COLLISION_ID, 
 		CRASH_DATE,
-		BOROUGH
+		BOROUGH,
+		ZIP_CODE,
+		LATITUDE,
+		LONGITUDE,
+		LOCATION
 FROM crash;
 
 CREATE TABLE injury (
@@ -79,7 +91,6 @@ SELECT COLLISION_ID,
 		VEHICLE_TYPE_CODE_4,
 		VEHICLE_TYPE_CODE_5
 FROM crash;
-
 
 
 --weather
@@ -159,8 +170,8 @@ INSERT INTO wind(
     SELECT measure_date, ave_wind_speed , 
            wind_direction_2min , wind_direction_5min ,
            wind_speed_2min , wind_speed_5min
-FROM weather
-WHERE station = 'USW00094728';
+    FROM weather
+    WHERE station = 'USW00094728';
 
 --covid19
 DROP TABLE IF EXISTS covid19;
@@ -183,6 +194,6 @@ SELECT TestDate,
 FROM covid;
 
 --drop temporary tables
--- DROP TABLE covid;
--- DROP TABLE crash;
--- DROP TABLE weather;
+DROP TABLE covid;
+DROP TABLE crash;
+DROP TABLE weather;
