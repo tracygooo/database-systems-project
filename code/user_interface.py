@@ -34,18 +34,36 @@ def submitCovidRankCases( start_date , end_date , limit , frame , myrow ):
     connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
     conn = psycopg2.connect( connect_string )
     cursor = conn.cursor()
-    print( start_date )
-    print( end_date )
-    print( limit )
     query = "SELECT county, SUM(newpositives) "\
             + "FROM covid19 WHERE testdate > %s AND testdate < %s "\
             + "GROUP BY county " + \
             "ORDER BY sum(newpositives) DESC LIMIT %s ;"
     cursor.execute( query , ( start_date.get() , end_date.get() , limit.get() ) )
     conn.commit()
+    records = cursor.fetchall()
+    print_records = ''
     for record in records :
         print_records = print_records + str( record ) + '\n'
+    records_label = Label( frame , text = print_records )
+    records_label.grid( row = myrow + 1 , column = 1 , columnspan = 2 )
     print(print_records)
+
+def submitCovidPosRatio( start_date , end_date , county , frame , myrow ):
+    connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
+    conn = psycopg2.connect( connect_string )
+    cursor = conn.cursor()
+    query = '''
+    SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
+    FROM covid19
+    WHERE TestDATE > %s 
+    AND TestDATE < %s
+    AND County ilike %s;       
+    '''
+    cursor.execute( query , ( start_date.get() , end_date.get() , county.get() ) )
+    conn.commit()
+    records = cursor.fetchall()[0]
+    records_label = Label( frame , text = records )
+    records_label.grid( row = myrow + 1 , column = 1 , columnspan = 2 )
 
 def getChildren (window) :
     child_list = window.winfo_children()
@@ -105,6 +123,32 @@ def queryCovidRankCases( frame ) :
     my_submit = Button( frame , text = "Submit" , command = partial( submitCovidRankCases , date_start_entry , date_end_entry , limit_entry , frame , myrow ) )
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
+
+def queryCovidPosRatio( frame ) :
+    clearChildren( frame )
+    myrow = 0
+    date_start_label = Label( frame , text = "Start date" )
+    date_start_label.grid( row = myrow , column = 0 )
+    date_start_entry = Entry( frame , width = 30 )
+    date_start_entry.grid( row = myrow , column = 1  )
+    myrow += 1
+
+    date_end_label = Label( frame , text = "End date" )
+    date_end_label.grid( row = myrow , column = 0 )
+    date_end_entry = Entry( frame , width = 30 )
+    date_end_entry.grid( row = myrow , column = 1  )
+    myrow += 1
+
+    limit_label = Label( frame , text = "County" )
+    limit_label.grid( row = myrow , column = 0 )
+    limit_entry = Entry( frame , width = 30 )
+    limit_entry.grid( row = myrow , column = 1 )
+    myrow += 1
+
+    # Create submit button
+    my_submit = Button( frame , text = "Submit" , command = partial( submitCovidPosRatio , date_start_entry , date_end_entry , limit_entry , frame , myrow ) )
+    my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+
 def weatherQuery( frame ):
     return True
 
@@ -146,6 +190,10 @@ myrow += 1
 
 covid_button2 = Button( leftframe , text = "Covid19-2" , command = partial( queryCovidRankCases , rightframe ) )
 covid_button2.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
+myrow += 1
+
+covid_button3 = Button( leftframe , text = "Covid19-3" , command = partial( queryCovidPosRatio , rightframe ) )
+covid_button3.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
 myrow += 1
 
 """
