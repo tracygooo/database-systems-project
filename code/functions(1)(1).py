@@ -12,8 +12,8 @@ class functions():
         with self.conn.cursor() as cursor:
             cursor.execute(query)
             return cursor.fetchall()
+
     def positive_ratio(self, from_date, to_date, county):
-        
         query = '''
         SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
         FROM covid19
@@ -86,5 +86,3 @@ if __name__ == '__main__':
     L = funcs.crash_weather('is_snowy')
     print('average num of crash in a snowy day is:'+str(L))
     print()
-    
-    
