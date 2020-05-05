@@ -14,19 +14,23 @@ def submit():
     connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
     conn = psycopg2.connect( connect_string )
     cursor = conn.cursor()
-    query = "SELECT * FROM covid19 WHERE testdate = %s and county = %s"
+    query = "SELECT * FROM covid19 WHERE testdate = %s and county ILIKE %s"
+    # query = "SELECT * FROM covid19 WHERE testdate >= %s and county ILIKE %s"
     cursor.execute( query , ( test_date.get() , county.get() ) )
-    results = cursor.fetchall()
-    print( results )
-    results_label = Label( root , text = results )
-    results_label.grid( row = 3 , column = 0 , columnspan = 3 )
+    records = cursor.fetchall()
+    print_records = "Date \t County \t New Positive \t Total tested\n"
+    for record in records :
+        print_records = print_records + str( record ) + '\n'
+    print( records )
+    records_label = Label( root , text = print_records )
+    records_label.grid( row = 3 , column = 0 , columnspan = 3 )
     conn.commit()
 
 # Setup window 
 root = Tk()
 app = Window(root)
 root.wm_title("Database Systems Final Project")
-root.geometry( "300x200" )
+root.geometry( "800x800" )
 
 # Create text labels
 date_label = Label( root , text = "Date" )
