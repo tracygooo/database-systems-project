@@ -256,6 +256,27 @@ def queryCrashFactor( frame ) :
     my_submit = Button( frame , text = "Submit" , command = partial( submitCrashFactor , limit_entry , frame , myrow ) )
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
+def queryCrashRegion( frame ):
+    connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
+    conn = psycopg2.connect( connect_string )
+    cursor = conn.cursor()
+    query = '''
+            SELECT region , count(region) FROM occurence
+            WHERE region NOT LIKE '' 
+            GROUP BY region
+            HAVING count(region) > 0
+            ORDER BY count(region) DESC
+            '''
+    cursor.execute( query )
+    conn.commit()
+    records = cursor.fetchall()
+    print_records = ''
+    for record in records :
+        print_records = print_records + str( record ) + '\n'
+    records_label = Label( frame , text = print_records )
+    records_label.grid( row = 0 , column = 0 , columnspan = 1 )
+    print(print_records)
+
 def queryCrashWeather( frame ) :
     clearChildren( frame )
     myrow = 0
@@ -321,6 +342,10 @@ myrow += 1
 # ---  Crash buttons
 crash_button1 = Button( leftframe , text = "Crash-1" , command = partial( queryCrashFactor , rightframe ) )
 crash_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
+myrow += 1
+
+crash_button2 = Button( leftframe , text = "Crash-2" , command = partial( queryCrashRegion , rightframe ) )
+crash_button2.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
 myrow += 1
 
 # ---  Crash & weather join button2 
