@@ -106,6 +106,33 @@ def submitCrashFactor( limit , frame , myrow ):
     records_label = Label( frame , text = print_records )
     records_label.grid( row = myrow + 1 , column = 1 , columnspan = 2 )
 
+def submitCrashWeather( weather_type , frame , myrow ):
+    connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
+    conn = psycopg2.connect( connect_string )
+    cursor = conn.cursor()
+
+    weather = weather_type.get()
+    l =['is_foggy','is_foggy_heavy','is_thunder','is_ice_pellets','is_glaze_rime','is_smoke_haze', 'is_damaging_wind','is_mist', 'is_drizzle', 'is_rainy', 'is_snowy', 'is_unknown_precipitation',  'is_freezing_foggy']
+
+    for e in l:
+        if weather in e:
+            weather = e
+
+    query = '''SELECT num1/num2 ratio
+                FROM(
+                SELECT count(measure_date) num1
+                FROM weatherType, occurence
+                WHERE crashdate = measure_date
+                AND %s = TRUE) a,
+                (SELECT count(measure_date) num2
+                FROM weatherType
+                WHERE %s = TRUE) b''' % ( weather, weather ) 
+
+    cursor.execute( query )
+    conn.commit()
+    records = cursor.fetchall()[0]
+    records_label = Label( frame , text = records )
+    records_label.grid( row = myrow + 1 , column = 1 , columnspan = 2 )
 
 def getChildren (window) :
     child_list = window.winfo_children()
@@ -204,23 +231,19 @@ def queryCrashFactor( frame ) :
     my_submit = Button( frame , text = "Submit" , command = partial( submitCrashFactor , limit_entry , frame , myrow ) )
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
-def weatherQuery( frame ):
-    return True
+def queryCrashWeather( frame ) :
+    clearChildren( frame )
+    myrow = 0
+    type_label = Label( frame , text = "Weather type" )
+    type_label.grid( row = myrow , column = 0 )
+    type_entry = Entry( frame , width = 30 )
+    type_entry.grid( row = myrow , column = 1  )
+    myrow += 1
 
-def crashQuery1( root ):
-    return True
+    # Create submit button
+    my_submit = Button( frame , text = "Submit" , command = partial( submitCrashWeather , type_entry , frame , myrow ) )
+    my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
-def crashQuery2( root ):
-    return True
-
-def crashWeatherQuery1( root ):
-    return True
-
-def crashWeatherQuery2( root ):
-    return True
-
-def crashCovidQuery( root ):
-    return True
 
 # --- Setup window 
 root = Tk()
@@ -256,6 +279,12 @@ myrow += 1
 crash_button1 = Button( leftframe , text = "Crash-1" , command = partial( queryCrashFactor , rightframe ) )
 crash_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
 myrow += 1
+
+# ---  Crash & weather join button 
+crash_weather_button1 = Button( leftframe , text = "Crash&Weather" , command = partial( queryCrashWeather, rightframe ) )
+crash_weather_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
+myrow += 1
+
 
 """
 weather_temp_button = Button( root , text = "Weather Query" , command = partial( weatherQuery, root ) )
