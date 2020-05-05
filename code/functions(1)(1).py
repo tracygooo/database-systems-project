@@ -12,7 +12,6 @@ class functions():
         with self.conn.cursor() as cursor:
             cursor.execute(query,(str(from_date),str(to_date),str(limit)))
             return cursor.fetchall()
-
     def positive_ratio(self, from_date, to_date, county):
         query = '''
         SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
@@ -74,7 +73,25 @@ class functions():
             cursor.execute(query)
             self.conn.commit()
             return cursor.fetchone()[0]
- 
+
+    #crash number in different precipitation amount
+    def crash_precipitation(self, bigger_than, smaller_than):
+        query = '''
+        SELECT count(COLLISION_ID)/tyw as ratio
+        FROM occurence, precipitation,(
+        SELECT count(measure_date) tyw
+        FROM precipitation
+        WHERE precipitation >%s
+        AND precipitation < %s) wyt
+        WHERE precipitation > %s
+        AND precipitation < %s
+        AND crashdate = measure_date
+        GROUP BY tyw;
+                '''
+        with self.conn.cursor() as cursor:
+            cursor.execute(query, (str(bigger_than),str(smaller_than), str(bigger_than),str(smaller_than)))
+            return cursor.fetchall()[0][0]
+     
 
 
 if __name__ == '__main__':
@@ -90,3 +107,5 @@ if __name__ == '__main__':
     L = funcs.crash_weather('snow')
     print('average num of crash in a snowy day is:'+str(L))
     print()
+    L = funcs.crash_precipitation(0,1)
+    print(L)
