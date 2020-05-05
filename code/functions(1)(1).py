@@ -12,6 +12,7 @@ class functions():
         with self.conn.cursor() as cursor:
             cursor.execute(query,(str(from_date),str(to_date),str(limit)))
             return cursor.fetchall()
+
     def positive_ratio(self, from_date, to_date, county):
         query = '''
         SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
