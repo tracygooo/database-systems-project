@@ -134,6 +134,31 @@ def submitCrashWeather( weather_type , frame , myrow ):
     records_label = Label( frame , text = records )
     records_label.grid( row = myrow + 1 , column = 1 , columnspan = 2 )
 
+def submitCrashPrecipitation( low , high , frame , myrow ):
+    connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
+    conn = psycopg2.connect( connect_string )
+    cursor = conn.cursor()
+
+    query = '''
+            SELECT count(COLLISION_ID)/tyw as ratio
+            FROM occurence, precipitation,(
+            SELECT count(measure_date) tyw
+            FROM precipitation
+            WHERE precipitation >%s
+            AND precipitation < %s) wyt
+            WHERE precipitation > %s
+            AND precipitation < %s
+            AND crashdate = measure_date
+            GROUP BY tyw;
+            '''
+
+    cursor.execute( query , ( low.get(), high.get() , low.get() , high.get() ) )
+    conn.commit()
+    records = cursor.fetchall()[0]
+    records_label = Label( frame , text = records )
+    records_label.grid( row = myrow + 1 , column = 1 , columnspan = 2 )
+
+
 def getChildren (window) :
     child_list = window.winfo_children()
     for item in child_list :
@@ -244,6 +269,24 @@ def queryCrashWeather( frame ) :
     my_submit = Button( frame , text = "Submit" , command = partial( submitCrashWeather , type_entry , frame , myrow ) )
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
+def queryCrashPrecipitation( frame ) :
+    clearChildren( frame )
+    myrow = 0
+    low_label = Label( frame , text = "Precipitation lower limit" )
+    low_label.grid( row = myrow , column = 0 )
+    low_entry = Entry( frame , width = 30 )
+    low_entry.grid( row = myrow , column = 1  )
+    myrow += 1
+
+    up_label = Label( frame , text = "Precipitation upper limit" )
+    up_label.grid( row = myrow , column = 0 )
+    up_entry = Entry( frame , width = 30 )
+    up_entry.grid( row = myrow , column = 1  )
+    myrow += 1
+
+    # Create submit button
+    my_submit = Button( frame , text = "Submit" , command = partial( submitCrashPrecipitation , low_entry , up_entry , frame , myrow ) )
+    my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
 # --- Setup window 
 root = Tk()
@@ -280,29 +323,14 @@ crash_button1 = Button( leftframe , text = "Crash-1" , command = partial( queryC
 crash_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
 myrow += 1
 
-# ---  Crash & weather join button 
-crash_weather_button1 = Button( leftframe , text = "Crash&Weather" , command = partial( queryCrashWeather, rightframe ) )
+# ---  Crash & weather join button2 
+crash_weather_button1 = Button( leftframe , text = "Crash & Weather-1" , command = partial( queryCrashWeather, rightframe ) )
 crash_weather_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
 myrow += 1
 
-
-"""
-weather_temp_button = Button( root , text = "Weather Query" , command = partial( weatherQuery, root ) )
-weather_temp_button.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-crash_button1 = Button( root , text = "Crash Query 1" , command = partial( crashQuery1, root ) )
-crash_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-crash_button2 = Button( root , text = "Crash Query 2" , command = partial( crashQuery2, root ) )
-crash_button2.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-crash_weather_button1 = Button( root , text = "Crash Weather Query1" , command = partial( crashWeatherQuery1, root ) )
-crash_weather_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-crash_weather_button2 = Button( root , text = "Crash Weather Query2" , command = partial( crashWeatherQuery2, root ) )
+crash_weather_button2 = Button( leftframe , text = "Crash & Weather-2" , command = partial( queryCrashPrecipitation , rightframe ) )
 crash_weather_button2.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
 myrow += 1
-"""
 
 # --- show window
 root.mainloop()
