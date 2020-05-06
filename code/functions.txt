@@ -1,0 +1,30 @@
+1. function(rank_new_positives):
+	Input: (start date, end date, top #) e.g.(2020-3-3,2020-4-3,5)
+	Output: the counties with the largest number of new positives 
+
+	After the input of start date, end date and the number of 'LIMIT', this function will automatically output the counties which have the largest amount of new tesing positives.
+
+2. function(positive_ratio):
+	Input:(start date, end date, county)
+	Output: the ratio of (new positives/ total number of tests performed)
+
+	After inputting start date, end date and county, this function will calculate the positivity rate.
+
+3. function(rank_crash_factor):
+	Input: 'LIMIT' #
+	Output: the most common factors that contribute to crashs in NYC.
+
+	This function will rank the most common factors that contribute to the crashs in NYC.
+
+4. functions(crash_weather):
+	Input: given weather type
+	Output: the number of crashes per day in this weather.
+
+	After the input of several weather type, this function will calculate the average number of crashed by dividing the number of crashes occurring on 'snowy' (take as an example) with the number of days it 'snows'.
+
+
+5. functions(crash_precipitation)
+	Input: the maximum value, the minimum value (unit: mm?)
+	Output: the average number of crashes occurring with the precipitation in selected range.
+
+	This function will calculate how many crashes per day when the precipitation is within the selected range.
