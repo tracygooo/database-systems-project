@@ -26,32 +26,37 @@ class functions():
         
     #rank the most common crash factors    
     def rank_crash_factor(self,limit):        
-        query = '''SELECT factor1,num1+num2+num3+num4+num5 num
-        FROM
-        (SELECT DISTINCT factor1,count(factor1) num1
-        FROM factor
-        GROUP BY factor1 
-        ) a,
-        (SELECT DISTINCT factor2,count(factor2) num2
-        FROM factor
-        GROUP BY factor2) b,
-        (SELECT DISTINCT factor3,count(factor3) num3
-        FROM factor
-        GROUP BY factor3) c,
-        (SELECT DISTINCT factor4,count(factor4) num4
-        FROM factor
-        GROUP BY factor4) d,
-        (SELECT DISTINCT factor5,count(factor5) num5
-        FROM factor
-        GROUP BY factor5) e
-        WHERE factor1 = factor2
-        AND factor2 = factor3
-        AND factor3 = factor4
-        AND factor4 = factor5
-        ORDER BY num DESC LIMIT %s;'''
+        query = '''SELECT DISTINCT(a.factor),count(collision_id) rank
+                    FROM factor,(
+                    SELECT DISTINCT factor1 as factor
+                    FROM factor
+                    GROUP BY factor1
+                    UNION
+                    SELECT DISTINCT factor2
+                    FROM factor
+                    GROUP BY factor2
+                    UNION
+                    SELECT DISTINCT factor3
+                    FROM factor
+                    GROUP BY factor3
+                    UNION   
+                    SELECT DISTINCT factor4
+                    FROM factor
+                    GROUP BY factor4
+                    UNION
+                    SELECT DISTINCT factor5
+                    FROM factor
+                    GROUP BY factor5) a
+                    WHERE a.factor = factor1
+                    OR a.factor=factor2
+                    OR a.factor=factor3
+                    OR a.factor=factor4
+                    OR a.factor=factor5
+                    GROUP BY factor
+                    ORDER BY rank DESC LIMIT %s;'''
         with self.conn.cursor() as cursor:
             cursor.execute(query,(str(limit),))
-            return cursor.fetchall()    
+            return cursor.fetchall()   
         
     #crash per day in each weather
     def crash_weather(self, weather):
