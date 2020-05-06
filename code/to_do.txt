@@ -1,0 +1,4 @@
+Add how to implement the applications in readme
+Change the frames of UI
+Create print function for records
+Record video
