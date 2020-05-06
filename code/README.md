@@ -57,8 +57,8 @@ This project created a Postgres database based on three public datasets: [Motor 
 - Input: 'top number of factors to be checked, e.g. (5)
 - Output: top n most common factors that contribute to crashs in NYC.
 
-#### Crash-2: rank the number of crashes by boroughs
-- Input: none 
+#### Crash-2: rank boroughs the number of crashes
+- Input: (start_date, end_date), e.g. (2020-3-4, 2020-4-3)
 - Output: boroughs and corresponding number of total crashes occured in descending order 
 
 #### Crash & Weather-1: compute average number of crashes in special weather type
@@ -66,7 +66,6 @@ This project created a Postgres database based on three public datasets: [Motor 
     - snow, rain, thunder, fog, smoke, mist, glaze, drizzle, wind
     - For instance, if snow is choosen, it will calculate the average number of crashed by dividing the number of crashes occurring on 'snowy' with the number of days it 'snows'
 - Output: the number of crashes per day in this weather type
-
 
 #### Crash & Weather-2: calculate average crashes within the precipitation range 
 - Input: (lower limit of precipitation, upper limit of precipitation)
