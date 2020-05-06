@@ -13,7 +13,7 @@ class Window(Frame):
         self.master = master
         self.grid()
 
-        for r in range(7):
+        for r in range(8):
             self.master.rowconfigure(r, weight=1)    
         for c in range(6):
             self.master.columnconfigure(c, weight=1)
@@ -21,11 +21,12 @@ class Window(Frame):
         self.left_frame = Frame( master )
         self.left_frame.grid(row = 0, column = 0, rowspan = 7, columnspan = 2, sticky = W+E+N+S) 
         self.top_right_frame = Frame( master )
-        self.top_right_frame.grid(row = 0, column = 2, rowspan = 2, columnspan = 4, sticky = W+E+N+S)
+        self.top_right_frame.grid(row = 0, column = 2, rowspan = 4, columnspan = 2, sticky = W+E+N+S)
         self.bottom_right_frame = Frame(master, bg="white")
-        self.bottom_right_frame.grid(row = 3, column = 2, rowspan = 4, columnspan = 4, sticky = W+E+N+S)
+        self.bottom_right_frame.grid(row = 4, column = 2, rowspan = 4, columnspan = 4, sticky = W+E+N+S)
 
-        self.records_text = Text( self.bottom_right_frame , height = 25 , width = 70 )
+        self.records_text = Text( self.bottom_right_frame , height = 30 , width = 78 )
+        self.records_text.tag_configure("center", justify='center')
         self.records_text.pack()
 
         self.connect_string = '''host='localhost' 
@@ -38,9 +39,9 @@ class Window(Frame):
 
     def createUserInput( self , frame , curr_row , reminder ) :
         my_label = Label( frame , text = reminder )
-        my_label.grid( row = curr_row , column = 0 )
+        my_label.grid( row = curr_row , column = 0 , columnspan = 1 , sticky = E )
         my_entry = Entry( frame , width = 30 )
-        my_entry.grid( row = curr_row , column = 1  )
+        my_entry.grid( row = curr_row , column = 1 , columnspan = 1 , sticky = W )
         return my_entry
 
     def clearText( self ):
@@ -53,7 +54,8 @@ class Window(Frame):
         self.clearText()
         #records_text = Text( self.bottom_right_frame , height = len(records) + 5, width = 60 )
         #records_text.pack()
-        self.records_text.insert( END , print_records )
+        self.records_text.insert( "1.0" , print_records )
+        self.records_text.tag_add("center", "1.0", "end")
 
     def submitCovidByDateCounty( self , test_date , county ):
         query = "SELECT * FROM covid19 WHERE testdate = %s and county ILIKE %s"
@@ -206,24 +208,43 @@ class Window(Frame):
         for item in widget_list:
             item.grid_forget()
 
+    def setQueryTitle( self , query_title ):
+        title_text = Text( self.top_right_frame , height = 1 , width = 55 , font = ( '', 11 ) )
+        title_text.tag_configure("center", justify='center')
+        title_text.grid( row = 0 , column = 0 , columnspan = 2 )
+        title_text.insert( "1.0" , query_title )
+        title_text.tag_add("center", "1.0", "end")
+
+    def setSubmitButton( self , my_button , myrow ):
+        my_button.grid( row = myrow , column = 0 , columnspan = 2 , 
+                        pady = 10 , padx = 10, ipadx = 100 )
+
     def queryCovidByDateCounty( self , frame ) :
         self.clearChildren( frame )
 
+        mytitle = '''Covid19-1 county positive number and total tests'''
+        self.setQueryTitle( mytitle )
+        myrow = 1 
+        myrow += 1
+
         # Create text labels and entry boxes
-        myrow = 0
         date_entry = self.createUserInput( frame , myrow , "Date" )
         myrow += 1
         county_entry = self.createUserInput( frame , myrow , "County" )
         myrow += 1
 
         # Create submit button
-        my_submit = Button( frame , text = "Submit" , command = partial( self.submitCovidByDateCounty , date_entry , county_entry ) )
-        my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+        my_submit = Button( frame , text = "Submit" , command = 
+                            partial( self.submitCovidByDateCounty , date_entry , county_entry ) )
+        self.setSubmitButton( my_submit , myrow )
 
     def queryCovidRankCases( self , frame ) :
         self.clearChildren( frame )
 
-        myrow = 0
+        mytitle = '''Covid19-2 Rank counties by new positives'''
+        self.setQueryTitle( mytitle )
+        myrow = 1 
+
         date_start_entry = self.createUserInput( frame , myrow , "Start date" )
         myrow += 1
 
@@ -235,12 +256,16 @@ class Window(Frame):
 
         # Create submit button
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCovidRankCases , date_start_entry , date_end_entry , limit_entry ) )
-        my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+        self.setSubmitButton( my_submit , myrow )
 
 
     def queryCovidPosRatio( self , frame ) :
         self.clearChildren( frame )
-        myrow = 0
+
+        mytitle = '''Covid19-3 Compute positivity rate'''
+        self.setQueryTitle( mytitle )
+        myrow = 1 
+
         date_start_entry = self.createUserInput( frame , myrow , "Start date" )
         myrow += 1
 
@@ -252,48 +277,59 @@ class Window(Frame):
 
         # Create submit button
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCovidPosRatio , date_start_entry , date_end_entry , county_entry ) )
-        my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+        self.setSubmitButton( my_submit , myrow )
 
     def queryCrashFactor( self , frame ) :
         self.clearChildren( frame )
-        myrow = 0
-        limit_label = Label( frame , text = "Top n factors" )
-        limit_label.grid( row = myrow , column = 0 )
-        limit_entry = Entry( frame , width = 30 )
-        limit_entry.grid( row = myrow , column = 1  )
+
+        mytitle = '''Crash-1 Rank factors contributing to crashes in NYC'''
+        self.setQueryTitle( mytitle )
+        myrow = 1 
+
+        limit_entry = self.createUserInput( frame , myrow , "Top n factors" )
         myrow += 1
 
         # Create submit button
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashFactor , limit_entry , frame , myrow ) )
-        my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+        self.setSubmitButton( my_submit , myrow )
 
     def queryCrashRegion( self , frame ):
         self.clearChildren( frame )
-        date_start_entry = self.createUserInput( frame , 0 , "Start date" )
-        date_end_entry = self.createUserInput( frame , 1 , "End date" )
+        mytitle = '''Crash-2 Rank boroughs by number of crashes'''
+        self.setQueryTitle( mytitle )
+
+        myrow = 1
+        date_start_entry = self.createUserInput( frame , myrow , "Start date" )
+        myrow += 1
+        date_end_entry = self.createUserInput( frame , myrow , "End date" )
+        myrow += 1
 
         # Create submit button
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashRegion, date_start_entry , date_end_entry ) )
-        my_submit.grid( row = 2 , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+        self.setSubmitButton( my_submit , myrow )
 
     def queryCrashWeather( self , frame ) :
         self.clearChildren( frame )
-        myrow = 0
-        type_label = Label( frame , text = "Weather type" )
-        type_label.grid( row = myrow , column = 0 )
-        type_entry = Entry( frame , width = 30 )
-        type_entry.grid( row = myrow , column = 1  )
+
+        mytitle = '''Crash & Weather-1 Ave num of crashes in special weather'''
+        self.setQueryTitle( mytitle )
+        myrow = 1 
+
+        type_entry = self.createUserInput( frame , myrow , "Weather type" )
         myrow += 1
 
         # Create submit button
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashWeather , type_entry ) )
-        my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+        self.setSubmitButton( my_submit , myrow )
 
     def queryCrashPrecipitation( self , frame ) :
         self.clearChildren( frame )
 
+        mytitle = '''Crash & Weather-2 Ave crashes within the precipitation range'''
+        self.setQueryTitle( mytitle )
+        myrow = 1 
+
         # Create entries
-        myrow = 0
         low_entry = self.createUserInput( frame , myrow , "Precipitation low" )
         myrow += 1
         up_entry = self.createUserInput( frame , myrow ,  "Precipitation high" )
@@ -301,20 +337,20 @@ class Window(Frame):
 
         # Create submit button
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashPrecipitation , low_entry , up_entry , frame , myrow ) )
-        my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
+        self.setSubmitButton( my_submit , myrow )
 
     def createMultiButtons( self , button_names , functions , mypad , mysticky ) :
         for i in range( len( button_names ) ) :
             button = Button( self.left_frame , text = button_names[i] , 
                              command = partial( functions[i] , self.top_right_frame ) )
-            button.grid( row = i , column = 0 , sticky = mysticky , padx = mypad , pady = mypad )
+            button.grid( row = i  , column = 0 , sticky = mysticky , padx = mypad , pady = mypad )
 
 def main() :
     # Setup window 
     root = Tk()
     app = Window(root)
     root.wm_title( "Database Systems Final Project" )
-    root.geometry("600x400+1200+1200")
+    root.geometry("700x550")
 
     # Create buttons for querying
     mypad , mysticky = 10 , W+E+N+S 
