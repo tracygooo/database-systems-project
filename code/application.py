@@ -12,20 +12,29 @@ class Window(Frame):
         Frame.__init__(self, master)
         self.master = master
         self.grid()
+
         for r in range(7):
             self.master.rowconfigure(r, weight=1)    
         for c in range(6):
             self.master.columnconfigure(c, weight=1)
 
-        self.left_frame = Frame(master, bg="red")
+        self.left_frame = Frame( master )
         self.left_frame.grid(row = 0, column = 0, rowspan = 7, columnspan = 2, sticky = W+E+N+S) 
-        self.top_right_frame = Frame(master, bg="grey")
-        self.top_right_frame.grid(row = 0, column = 2, rowspan = 3, columnspan = 4, sticky = W+E+N+S)
+        self.top_right_frame = Frame( master )
+        self.top_right_frame.grid(row = 0, column = 2, rowspan = 2, columnspan = 4, sticky = W+E+N+S)
         self.bottom_right_frame = Frame(master, bg="white")
         self.bottom_right_frame.grid(row = 3, column = 2, rowspan = 4, columnspan = 4, sticky = W+E+N+S)
 
-        self.records_text = Text( self.bottom_right_frame , height = 20 , width = 60 )
+        self.records_text = Text( self.bottom_right_frame , height = 25 , width = 70 )
         self.records_text.pack()
+
+        self.connect_string = '''host='localhost' 
+                                 dbname='dbms_final_project' 
+                                 user='dbms_project_user' 
+                                 password='dbms_password' '''
+        self.conn = psycopg2.connect( self.connect_string )
+        self.cursor = self.conn.cursor()
+
 
     def createUserInput( self , frame , curr_row , reminder ) :
         my_label = Label( frame , text = reminder )
@@ -47,62 +56,43 @@ class Window(Frame):
         self.records_text.insert( END , print_records )
 
     def submitCovidByDateCounty( self , test_date , county ):
-        connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
-        conn = psycopg2.connect( connect_string )
-        cursor = conn.cursor()
         query = "SELECT * FROM covid19 WHERE testdate = %s and county ILIKE %s"
-        cursor.execute( query , ( test_date.get() , county.get() ) )
-        conn.commit()
+        self.cursor.execute( query , ( test_date.get() , county.get() ) )
+        self.conn.commit()
 
-        records = cursor.fetchall()
+        records = self.cursor.fetchall()
         headers = [ 'Date' , 'County' , 'New Positive' , 'Total tests' ] 
 
-        """
-        print_records = tabulate( records , headers , tablefmt = "fancy_grid" )
-        print( print_records ) 
-        records_label = Label( self.bottom_right_frame , text = print_records )
-        records_label.grid( row = 0 , column = 0 , columnspan = 10  )
-        """
         self.outputRecords( records , headers )
 
     def submitCovidRankCases( self , start_date , end_date , limit ):
-        connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
-        conn = psycopg2.connect( connect_string )
-        cursor = conn.cursor()
         query = "SELECT county, SUM(newpositives) "\
-                + "FROM covid19 WHERE testdate > %s AND testdate < %s "\
+                + "FROM covid19 WHERE testdate >= %s AND testdate <= %s "\
                 + "GROUP BY county " + \
                 "ORDER BY sum(newpositives) DESC LIMIT %s ;"
-        cursor.execute( query , ( start_date.get() , end_date.get() , limit.get() ) )
-        conn.commit()
+        self.cursor.execute( query , ( start_date.get() , end_date.get() , limit.get() ) )
+        self.conn.commit()
 
-        records = cursor.fetchall()
+        records = self.cursor.fetchall()
         headers = [ 'County' , 'Accumulated positives' ]
         self.outputRecords( records , headers )
 
     def submitCovidPosRatio( self , start_date , end_date , county ):
-        connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
-        conn = psycopg2.connect( connect_string )
-        cursor = conn.cursor()
         query = '''
                 SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
                 FROM covid19
-                WHERE TestDATE > %s 
-                AND TestDATE < %s
+                WHERE TestDATE >= %s 
+                AND TestDATE <= %s
                 AND County ilike %s;       
                 '''
-        cursor.execute( query , ( start_date.get() , end_date.get() , county.get() ) )
-        conn.commit()
-        records = cursor.fetchall()
+        self.cursor.execute( query , ( start_date.get() , end_date.get() , county.get() ) )
+        self.conn.commit()
+        records = self.cursor.fetchall()
         headers = [ 'Psotivity rate' ]
         self.outputRecords( records , headers )
 
 
     def submitCrashFactor( self , limit , frame , myrow ):
-        connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
-        conn = psycopg2.connect( connect_string )
-        cursor = conn.cursor()
-
         print( "Running, takes around 10 seconds..." )
         query = '''
                 SELECT DISTINCT(a.factor),count(collision_id) rank
@@ -134,16 +124,28 @@ class Window(Frame):
                 GROUP BY factor
                 ORDER BY rank DESC LIMIT %s;
                 '''
-        cursor.execute( query , ( limit.get(), ) )
-        conn.commit()
-        records = cursor.fetchall()
+        self.cursor.execute( query , ( limit.get(), ) )
+        self.conn.commit()
+        records = self.cursor.fetchall()
         headers = [ 'Factors' , 'Number of Crashes' ]
         self.outputRecords( records , headers )
 
+    def submitCrashRegion( self , start_date , end_date  ):
+        query = '''
+                SELECT region , count(region) FROM occurence
+                WHERE region NOT LIKE '' AND 
+                      crashDate >= %s AND crashDate <= %s
+                GROUP BY region
+                HAVING count(region) > 0
+                ORDER BY count(region) DESC
+                '''
+        self.cursor.execute( query , ( start_date.get() , end_date.get() ) )
+        self.conn.commit()
+        records = self.cursor.fetchall()
+        headers = [ 'Borough', '# of crashes' ]
+        self.outputRecords( records , headers )
+
     def submitCrashWeather( self , weather_type ):
-        connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
-        conn = psycopg2.connect( connect_string )
-        cursor = conn.cursor()
 
         weather = weather_type.get()
         l =['is_foggy','is_foggy_heavy','is_thunder',
@@ -165,33 +167,29 @@ class Window(Frame):
                     FROM weatherType
                     WHERE %s = TRUE) b''' % ( weather, weather ) 
 
-        cursor.execute( query )
-        conn.commit()
-        records = cursor.fetchall()
+        self.cursor.execute( query )
+        self.conn.commit()
+        records = self.cursor.fetchall()
         headers = [ 'Ave num of crashes in {}'.format( weather_type.get() )  ]
         self.outputRecords( records , headers )
 
     def submitCrashPrecipitation(  self , low , high , frame , myrow ):
-        connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
-        conn = psycopg2.connect( connect_string )
-        cursor = conn.cursor()
-
         query = '''
                 SELECT count(COLLISION_ID)/tyw as ratio
                 FROM occurence, precipitation,(
                 SELECT count(measure_date) tyw
                 FROM precipitation
-                WHERE precipitation >%s
-                AND precipitation < %s) wyt
-                WHERE precipitation > %s
-                AND precipitation < %s
+                WHERE precipitation >= %s
+                AND precipitation <= %s) wyt
+                WHERE precipitation >= %s
+                AND precipitation <= %s
                 AND crashdate = measure_date
                 GROUP BY tyw;
                 '''
 
-        cursor.execute( query , ( low.get(), high.get() , low.get() , high.get() ) )
-        conn.commit()
-        records = cursor.fetchall()
+        self.cursor.execute( query , ( low.get(), high.get() , low.get() , high.get() ) )
+        self.conn.commit()
+        records = self.cursor.fetchall()
         headers = [ 'Ave num of crashes when {}mm < PRCP < {}mm'.format( low.get() ,high.get() ) ]
         self.outputRecords( records , headers )
 
@@ -232,7 +230,7 @@ class Window(Frame):
         date_end_entry = self.createUserInput( frame , myrow , "End date" )
         myrow += 1
 
-        limit_entry = self.createUserInput( frame , myrow , "First n counties" )
+        limit_entry = self.createUserInput( frame , myrow , "Top n counties" )
         myrow += 1
 
         # Create submit button
@@ -269,24 +267,6 @@ class Window(Frame):
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashFactor , limit_entry , frame , myrow ) )
         my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
-    def submitCrashRegion( self , start_date , end_date  ):
-        connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
-        conn = psycopg2.connect( connect_string )
-        cursor = conn.cursor()
-        query = '''
-                SELECT region , count(region) FROM occurence
-                WHERE region NOT LIKE '' AND 
-                      crashDate >= %s AND crashDate <= %s
-                GROUP BY region
-                HAVING count(region) > 0
-                ORDER BY count(region) DESC
-                '''
-        cursor.execute( query , ( start_date.get() , end_date.get() ) )
-        conn.commit()
-        records = cursor.fetchall()
-        headers = [ 'Borough', '# of crashes' ]
-        self.outputRecords( records , headers )
-
     def queryCrashRegion( self , frame ):
         self.clearChildren( frame )
         date_start_entry = self.createUserInput( frame , 0 , "Start date" )
@@ -314,9 +294,9 @@ class Window(Frame):
 
         # Create entries
         myrow = 0
-        low_entry = self.createUserInput( frame , myrow , "Precipitation lower limit" )
+        low_entry = self.createUserInput( frame , myrow , "Precipitation low" )
         myrow += 1
-        up_entry = self.createUserInput( frame , myrow ,  "Precipitation upper limit" )
+        up_entry = self.createUserInput( frame , myrow ,  "Precipitation high" )
         myrow += 1
 
         # Create submit button
@@ -329,23 +309,26 @@ class Window(Frame):
                              command = partial( functions[i] , self.top_right_frame ) )
             button.grid( row = i , column = 0 , sticky = mysticky , padx = mypad , pady = mypad )
 
-# ======================================================
-# --- Setup window and two frames 
-root = Tk()
-app = Window(root)
-root.wm_title( "Database Systems Final Project" )
-root.geometry("800x600+1200+1200")
+def main() :
+    # Setup window 
+    root = Tk()
+    app = Window(root)
+    root.wm_title( "Database Systems Final Project" )
+    root.geometry("600x400+1200+1200")
 
-# --- Create buttons for querying
-mypad , mysticky = 5 ,  "E"
-button_names = ["Covid19-1" , "Covid19-2" ,  "Covid19-3" , 
-                "Crash-1" , "Crash-2" , "Crash & Weather-1" , 
-                "Crash & Weather-2" ] 
-functions = [ app.queryCovidByDateCounty , app.queryCovidRankCases , 
-              app.queryCovidPosRatio , app.queryCrashFactor , 
-              app.queryCrashRegion , app.queryCrashWeather , app.queryCrashPrecipitation ]
+    # Create buttons for querying
+    mypad , mysticky = 10 , W+E+N+S 
+    button_names = ["Covid19-1" , "Covid19-2" ,  "Covid19-3" , 
+                    "Crash-1" , "Crash-2" , "Crash & Weather-1" , 
+                    "Crash & Weather-2" ] 
+    functions = [ app.queryCovidByDateCounty , app.queryCovidRankCases , 
+                  app.queryCovidPosRatio , app.queryCrashFactor , 
+                  app.queryCrashRegion , app.queryCrashWeather , app.queryCrashPrecipitation ]
 
-app.createMultiButtons( button_names , functions , mypad , mysticky )
+    app.createMultiButtons( button_names , functions , mypad , mysticky )
 
-# --- show window
-root.mainloop()
+    # show window
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
