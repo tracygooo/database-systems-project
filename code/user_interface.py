@@ -12,6 +12,13 @@ class Window(Frame):
         Frame.__init__(self, master)
         self.master = master
 
+def createUserInput( frame , curr_row , reminder ) :
+    my_label = Label( frame , text = reminder )
+    my_label.grid( row = curr_row , column = 0 )
+    my_entry = Entry( frame , width = 30 )
+    my_entry.grid( row = curr_row , column = 1  )
+    return my_entry
+
 def submitCovidByDateCounty( test_date , county , frame , myrow ):
     connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
     conn = psycopg2.connect( connect_string )
@@ -50,12 +57,12 @@ def submitCovidPosRatio( start_date , end_date , county , frame , myrow ):
     conn = psycopg2.connect( connect_string )
     cursor = conn.cursor()
     query = '''
-    SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
-    FROM covid19
-    WHERE TestDATE > %s 
-    AND TestDATE < %s
-    AND County ilike %s;       
-    '''
+            SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
+            FROM covid19
+            WHERE TestDATE > %s 
+            AND TestDATE < %s
+            AND County ilike %s;       
+            '''
     cursor.execute( query , ( start_date.get() , end_date.get() , county.get() ) )
     conn.commit()
     records = cursor.fetchall()[0]
@@ -68,31 +75,35 @@ def submitCrashFactor( limit , frame , myrow ):
     cursor = conn.cursor()
 
     query = '''
-            SELECT factor1,num1+num2+num3+num4+num5 num
-            FROM
-            (SELECT DISTINCT factor1,count(factor1) num1
+            SELECT DISTINCT(a.factor),count(collision_id) rank
+            FROM factor,(
+            SELECT DISTINCT factor1 as factor
             FROM factor
-            GROUP BY factor1 
-            ) a,
-            (SELECT DISTINCT factor2,count(factor2) num2
+            GROUP BY factor1
+            UNION
+            SELECT DISTINCT factor2
             FROM factor
-            GROUP BY factor2) b,
-            (SELECT DISTINCT factor3,count(factor3) num3
+            GROUP BY factor2
+            UNION
+            SELECT DISTINCT factor3
             FROM factor
-            GROUP BY factor3) c,
-            (SELECT DISTINCT factor4,count(factor4) num4
+            GROUP BY factor3
+            UNION   
+            SELECT DISTINCT factor4
             FROM factor
-            GROUP BY factor4) d,
-            (SELECT DISTINCT factor5,count(factor5) num5
+            GROUP BY factor4
+            UNION
+            SELECT DISTINCT factor5
             FROM factor
-            GROUP BY factor5) e
-            WHERE factor1 = factor2
-            AND factor2 = factor3
-            AND factor3 = factor4
-            AND factor4 = factor5
-            ORDER BY num DESC LIMIT %s;
+            GROUP BY factor5) a
+            WHERE a.factor = factor1
+            OR a.factor=factor2
+            OR a.factor=factor3
+            OR a.factor=factor4
+            OR a.factor=factor5
+            GROUP BY factor
+            ORDER BY rank DESC LIMIT %s;
             '''
-
     cursor.execute( query , ( limit.get(), ) )
     conn.commit()
     records = cursor.fetchall()
@@ -175,16 +186,9 @@ def queryCovidByDateCounty( frame ) :
 
     # Create text labels and entry boxes
     myrow = 0
-    date_label = Label( frame , text = "Date" )
-    date_label.grid( row = myrow , column = 0 )
-    date_entry = Entry( frame , width = 30 )
-    date_entry.grid( row = myrow , column = 1  )
+    date_entry = createUserInput( frame , myrow , "Date" )
     myrow += 1
-
-    county_label = Label( frame , text = "County" )
-    county_label.grid( row = myrow , column = 0 )
-    county_entry = Entry( frame , width = 30 )
-    county_entry.grid( row = myrow , column = 1 )
+    county_entry = createUserInput( frame , myrow , "County" )
     myrow += 1
 
     # Create submit button
@@ -193,23 +197,15 @@ def queryCovidByDateCounty( frame ) :
 
 def queryCovidRankCases( frame ) :
     clearChildren( frame )
+
     myrow = 0
-    date_start_label = Label( frame , text = "Start date" )
-    date_start_label.grid( row = myrow , column = 0 )
-    date_start_entry = Entry( frame , width = 30 )
-    date_start_entry.grid( row = myrow , column = 1  )
+    date_start_entry = createUserInput( frame , myrow , "Start date" )
     myrow += 1
 
-    date_end_label = Label( frame , text = "End date" )
-    date_end_label.grid( row = myrow , column = 0 )
-    date_end_entry = Entry( frame , width = 30 )
-    date_end_entry.grid( row = myrow , column = 1  )
+    date_end_entry = createUserInput( frame , myrow , "End date" )
     myrow += 1
 
-    limit_label = Label( frame , text = "First n counties" )
-    limit_label.grid( row = myrow , column = 0 )
-    limit_entry = Entry( frame , width = 30 )
-    limit_entry.grid( row = myrow , column = 1 )
+    limit_entry = createUserInput( frame , myrow , "First n counties" )
     myrow += 1
 
     # Create submit button
@@ -220,26 +216,17 @@ def queryCovidRankCases( frame ) :
 def queryCovidPosRatio( frame ) :
     clearChildren( frame )
     myrow = 0
-    date_start_label = Label( frame , text = "Start date" )
-    date_start_label.grid( row = myrow , column = 0 )
-    date_start_entry = Entry( frame , width = 30 )
-    date_start_entry.grid( row = myrow , column = 1  )
+    date_start_entry = createUserInput( frame , myrow , "Start date" )
     myrow += 1
 
-    date_end_label = Label( frame , text = "End date" )
-    date_end_label.grid( row = myrow , column = 0 )
-    date_end_entry = Entry( frame , width = 30 )
-    date_end_entry.grid( row = myrow , column = 1  )
+    date_end_entry = createUserInput( frame , myrow , "End date" )
     myrow += 1
 
-    limit_label = Label( frame , text = "County" )
-    limit_label.grid( row = myrow , column = 0 )
-    limit_entry = Entry( frame , width = 30 )
-    limit_entry.grid( row = myrow , column = 1 )
+    county_entry = createUserInput( frame , myrow , "County" )
     myrow += 1
 
     # Create submit button
-    my_submit = Button( frame , text = "Submit" , command = partial( submitCovidPosRatio , date_start_entry , date_end_entry , limit_entry , frame , myrow ) )
+    my_submit = Button( frame , text = "Submit" , command = partial( submitCovidPosRatio , date_start_entry , date_end_entry , county_entry , frame , myrow ) )
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
 def queryCrashFactor( frame ) :
@@ -256,6 +243,7 @@ def queryCrashFactor( frame ) :
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
 def queryCrashRegion( frame ):
+    clearChildren( frame )
     connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
     conn = psycopg2.connect( connect_string )
     cursor = conn.cursor()
@@ -291,29 +279,29 @@ def queryCrashWeather( frame ) :
 
 def queryCrashPrecipitation( frame ) :
     clearChildren( frame )
-    myrow = 0
-    low_label = Label( frame , text = "Precipitation lower limit" )
-    low_label.grid( row = myrow , column = 0 )
-    low_entry = Entry( frame , width = 30 )
-    low_entry.grid( row = myrow , column = 1  )
-    myrow += 1
 
-    up_label = Label( frame , text = "Precipitation upper limit" )
-    up_label.grid( row = myrow , column = 0 )
-    up_entry = Entry( frame , width = 30 )
-    up_entry.grid( row = myrow , column = 1  )
+    # Create entries
+    myrow = 0
+    low_entry = createUserInput( frame , myrow , "Precipitation lower limit" )
+    myrow += 1
+    up_entry = createUserInput( frame , myrow ,  "Precipitation upper limit" )
     myrow += 1
 
     # Create submit button
     my_submit = Button( frame , text = "Submit" , command = partial( submitCrashPrecipitation , low_entry , up_entry , frame , myrow ) )
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
+def createMultiButtons( button_names , functions , mypad , mysticky ) :
+    for i in range( len( button_names ) ) :
+        button = Button( leftframe , text = button_names[i] , command = partial( functions[i] , rightframe ) )
+        button.grid( row = i , column = 0 , sticky = mysticky , padx = mypad , pady = mypad )
+
 # ======================================================
-# --- Setup window 
+# --- Setup window and two frames 
 root = Tk()
 app = Window(root)
 root.wm_title( "Database Systems Final Project" )
-root.geometry( "800x400" )
+root.geometry( "600x400" )
 
 leftframe = Frame(root)
 leftframe.pack( side = LEFT )
@@ -321,10 +309,8 @@ leftframe.pack( side = LEFT )
 rightframe = Frame( root )
 rightframe.pack( side = RIGHT )
 
-# --- Parameters for buttons linked to queries 
-mypadx , mypady = 5 , 5 
-mysticky = "E"
-myrow = 0
+# --- Create buttons for querying
+mypad , mysticky = 5 ,  "E"
 button_names = ["Covid19-1" , "Covid19-2" ,  "Covid19-3" , 
                 "Crash-1" , "Crash-2" , "Crash & Weather-1" , 
                 "Crash & Weather-2" ] 
@@ -332,10 +318,7 @@ functions = [ queryCovidByDateCounty , queryCovidRankCases ,
               queryCovidPosRatio , queryCrashFactor , 
               queryCrashRegion , queryCrashWeather , queryCrashPrecipitation ]
 
-# --- Create buttons for querying
-for i in range( len( button_names ) ) :
-    button = Button( leftframe , text = button_names[i] , command = partial( functions[i] , rightframe ) )
-    button.grid( row = i , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
+createMultiButtons( button_names , functions , mypad , mysticky )
 
 # --- show window
 root.mainloop()
