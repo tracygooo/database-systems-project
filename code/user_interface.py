@@ -5,6 +5,7 @@ import os
 from tkinter import *
 from datetime import datetime
 from functools import partial
+from tabulate import tabulate
 
 class Window(Frame):
     def __init__(self, master=None):
@@ -12,23 +13,19 @@ class Window(Frame):
         self.master = master
 
 def submitCovidByDateCounty( test_date , county , frame , myrow ):
-    print(test_date )
-    print(county)
     connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
     conn = psycopg2.connect( connect_string )
     cursor = conn.cursor()
     query = "SELECT * FROM covid19 WHERE testdate = %s and county ILIKE %s"
     cursor.execute( query , ( test_date.get() , county.get() ) )
-    records = cursor.fetchall()[0]
-    records_label = Label( frame , text = records )
-    records_label.grid( row = myrow + 1 , column = 1 , columnspan = 2 )
     conn.commit()
+    records = cursor.fetchall()
 
-    print_records = "Date \t County \t New Positive \t Total tested\n"
-    #for record in records :
-    #    print_records = print_records + str( record ) + '\n'
-    # records_label.pack()
-    print(records)
+    headers = [ 'Date' , 'County' , 'New Positive' , 'Total tests' ] 
+    print_records = tabulate( records , headers , tablefmt = "fancy_grid" )
+    print( print_records ) 
+    records_label = Label( frame , text = print_records )
+    records_label.grid( row = myrow + 1 , column = 0 , columnspan = 2  )
 
 def submitCovidRankCases( start_date , end_date , limit , frame , myrow ):
     connect_string = "host='localhost' dbname='dbms_final_project' user='dbms_project_user' password='dbms_password'"
@@ -70,29 +67,31 @@ def submitCrashFactor( limit , frame , myrow ):
     conn = psycopg2.connect( connect_string )
     cursor = conn.cursor()
 
-    query = '''SELECT factor1,num1+num2+num3+num4+num5 num
-    FROM
-    (SELECT DISTINCT factor1,count(factor1) num1
-    FROM factor
-    GROUP BY factor1 
-    ) a,
-    (SELECT DISTINCT factor2,count(factor2) num2
-    FROM factor
-    GROUP BY factor2) b,
-    (SELECT DISTINCT factor3,count(factor3) num3
-    FROM factor
-    GROUP BY factor3) c,
-    (SELECT DISTINCT factor4,count(factor4) num4
-    FROM factor
-    GROUP BY factor4) d,
-    (SELECT DISTINCT factor5,count(factor5) num5
-    FROM factor
-    GROUP BY factor5) e
-    WHERE factor1 = factor2
-    AND factor2 = factor3
-    AND factor3 = factor4
-    AND factor4 = factor5
-    ORDER BY num DESC LIMIT %s;'''
+    query = '''
+            SELECT factor1,num1+num2+num3+num4+num5 num
+            FROM
+            (SELECT DISTINCT factor1,count(factor1) num1
+            FROM factor
+            GROUP BY factor1 
+            ) a,
+            (SELECT DISTINCT factor2,count(factor2) num2
+            FROM factor
+            GROUP BY factor2) b,
+            (SELECT DISTINCT factor3,count(factor3) num3
+            FROM factor
+            GROUP BY factor3) c,
+            (SELECT DISTINCT factor4,count(factor4) num4
+            FROM factor
+            GROUP BY factor4) d,
+            (SELECT DISTINCT factor5,count(factor5) num5
+            FROM factor
+            GROUP BY factor5) e
+            WHERE factor1 = factor2
+            AND factor2 = factor3
+            AND factor3 = factor4
+            AND factor4 = factor5
+            ORDER BY num DESC LIMIT %s;
+            '''
 
     cursor.execute( query , ( limit.get(), ) )
     conn.commit()
@@ -309,11 +308,12 @@ def queryCrashPrecipitation( frame ) :
     my_submit = Button( frame , text = "Submit" , command = partial( submitCrashPrecipitation , low_entry , up_entry , frame , myrow ) )
     my_submit.grid( row = myrow , column = 1 , columnspan = 2 , pady = 10 , padx = 10, ipadx = 100 )
 
+# ======================================================
 # --- Setup window 
 root = Tk()
 app = Window(root)
 root.wm_title( "Database Systems Final Project" )
-root.geometry( "600x400" )
+root.geometry( "800x400" )
 
 leftframe = Frame(root)
 leftframe.pack( side = LEFT )
@@ -325,37 +325,17 @@ rightframe.pack( side = RIGHT )
 mypadx , mypady = 5 , 5 
 mysticky = "E"
 myrow = 0
+button_names = ["Covid19-1" , "Covid19-2" ,  "Covid19-3" , 
+                "Crash-1" , "Crash-2" , "Crash & Weather-1" , 
+                "Crash & Weather-2" ] 
+functions = [ queryCovidByDateCounty , queryCovidRankCases , 
+              queryCovidPosRatio , queryCrashFactor , 
+              queryCrashRegion , queryCrashWeather , queryCrashPrecipitation ]
 
-# ---  Covid buttons
-covid_button1 = Button( leftframe , text = "Covid19-1" , command = partial( queryCovidByDateCounty , rightframe ) )
-covid_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-
-covid_button2 = Button( leftframe , text = "Covid19-2" , command = partial( queryCovidRankCases , rightframe ) )
-covid_button2.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-
-covid_button3 = Button( leftframe , text = "Covid19-3" , command = partial( queryCovidPosRatio , rightframe ) )
-covid_button3.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-
-# ---  Crash buttons
-crash_button1 = Button( leftframe , text = "Crash-1" , command = partial( queryCrashFactor , rightframe ) )
-crash_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-
-crash_button2 = Button( leftframe , text = "Crash-2" , command = partial( queryCrashRegion , rightframe ) )
-crash_button2.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-
-# ---  Crash & weather join button2 
-crash_weather_button1 = Button( leftframe , text = "Crash & Weather-1" , command = partial( queryCrashWeather, rightframe ) )
-crash_weather_button1.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
-
-crash_weather_button2 = Button( leftframe , text = "Crash & Weather-2" , command = partial( queryCrashPrecipitation , rightframe ) )
-crash_weather_button2.grid( row = myrow , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
-myrow += 1
+# --- Create buttons for querying
+for i in range( len( button_names ) ) :
+    button = Button( leftframe , text = button_names[i] , command = partial( functions[i] , rightframe ) )
+    button.grid( row = i , column = 0 , sticky = mysticky , padx = mypadx , pady = mypady )
 
 # --- show window
 root.mainloop()
