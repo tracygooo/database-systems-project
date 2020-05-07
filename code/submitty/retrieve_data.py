@@ -24,4 +24,5 @@ for i in range( len(urls) ) :
     url = urls[i].splitlines()[0]
     print( "'{}' downloading: {}".format( output_fnames[i], datetime.now() ) )
     wget.download( url , data_path + output_fnames[i] )
-    print( "'{}' downloaded: {}\n".format( output_fnames[i] , datetime.now() ) )
+    print( "'{}' downloaded: {}".format( output_fnames[i] , datetime.now() ) )
+print( '-'*65 )

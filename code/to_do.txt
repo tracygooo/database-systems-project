@@ -1,2 +1,0 @@
-remove text border
-Change backgound for frames

@@ -13,8 +13,7 @@ cursor = conn.cursor()
 create_schema = open( schema_fname , 'r' ).read()
 cursor.execute( create_schema )
 conn.commit()
-print( '='*65 )
-print( '\n' )
+print( '-'*65 )
 
 # --- Load data into temporary tables 
 print( 'Loading datasets into temperary tables' )
@@ -22,21 +21,19 @@ dataset_path = 'datasets/'
 dataset_fname = [ 'covid19.csv' , 'weather.csv' , 'crash.csv' ]
 table_name = [ 'covid' , 'weather' , 'crash' ]
 for i in range( len(dataset_fname) ) :
-    print( "\nTemporary Table '{}' start loading: {}".format( table_name[i] , datetime.now() ) )
+    print( "Temporary Table '{}' start loading: {}".format( table_name[i] , datetime.now() ) )
     f_dataset = open( dataset_path + dataset_fname[i] , "r")
     cursor.copy_expert( "copy {} from STDIN CSV HEADER QUOTE '\"'".format( table_name[i] ), f_dataset )
     conn.commit()
-    print( "\nTemporary Table '{}' complete loading: {}".format( table_name[i] , datetime.now() ) )
-print( '='*65 )
-print( '\n' )
+    print( "Temporary Table '{}' complete loading: {}".format( table_name[i] , datetime.now() ) )
+print( '-'*65 )
 
 # --- Insert data into splitted tables from temporary table 
 print( 'Creating splitted tables for research' )
-print( "\nTables start creating: {}".format( datetime.now()))
+print( "Tables start creating: {}".format( datetime.now()))
 schema_fname = 'table.sql'
 create_schema = open( schema_fname , 'r' ).read()
 cursor.execute(create_schema)
 conn.commit()
-print( "\nTables complete creating: {}".format( datetime.now()))
-print( '='*65 )
-print( '\n' )
+print( "Tables complete creating: {}".format( datetime.now()))
+print( '-'*65 )

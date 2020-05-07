@@ -8,6 +8,9 @@ from functools import partial
 from tabulate import tabulate
 
 class Window(Frame):
+    # --- Create three frames: left - query buttons, 
+    # top right - user input, right bottom - text output
+    # --- Setup database connection
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -25,10 +28,12 @@ class Window(Frame):
         self.bottom_right_frame = Frame(master, bg="white")
         self.bottom_right_frame.grid(row = 4, column = 2, rowspan = 4, columnspan = 4, sticky = W+E+N+S)
 
+        # text widget embedded in right bottom frame
         self.records_text = Text( self.bottom_right_frame , height = 30 , width = 78 )
         self.records_text.tag_configure("center", justify='center')
         self.records_text.pack()
 
+        # Setup database connection
         self.connect_string = '''host='localhost' 
                                  dbname='dbms_final_project' 
                                  user='dbms_project_user' 
@@ -61,6 +66,7 @@ class Window(Frame):
         except ValueError:
             raise ValueError( "Incorrect data format, should be YYYY-MM-DD" )
 
+    # --- Covid19-1 submit button triggers this function
     def submitCovidByDateCounty( self , test_date , county ):
         self.validateDateInput( test_date.get() )
         query = "SELECT * FROM covid19 WHERE testdate = %s and county ILIKE %s"
@@ -72,6 +78,7 @@ class Window(Frame):
 
         self.outputRecords( records , headers )
 
+    # --- Covid19-2 submit button triggers this function
     def submitCovidRankCases( self , start_date , end_date , limit ):
         self.validateDateInput( start_date.get() )
         self.validateDateInput( end_date.get() )
@@ -86,6 +93,7 @@ class Window(Frame):
         headers = [ 'County' , 'Accumulated positives' ]
         self.outputRecords( records , headers )
 
+    # --- Covid19-3 submit button triggers this function
     def submitCovidPosRatio( self , start_date , end_date , county ):
         self.validateDateInput( start_date.get() )
         self.validateDateInput( end_date.get() )
@@ -103,6 +111,7 @@ class Window(Frame):
         self.outputRecords( records , headers )
 
 
+    # --- Crash-1 submit button triggers this function
     def submitCrashFactor( self , limit , frame , myrow ):
         print( "Running, takes around 10 seconds..." )
         query = '''
@@ -141,6 +150,7 @@ class Window(Frame):
         headers = [ 'Factors' , 'Number of Crashes' ]
         self.outputRecords( records , headers )
 
+    # --- Crash-2 submit button triggers this function
     def submitCrashRegion( self , start_date , end_date  ):
         self.validateDateInput( start_date.get() )
         self.validateDateInput( end_date.get() )
@@ -161,11 +171,14 @@ class Window(Frame):
 
     def validateWeatherType( self , weather_type ):
         try:
-            if self.searchRightWeather( weather_type ) == False:
+            weather , found = self.searchRightWeather( weather_type )
+            if found == False:
                 raise ValueError( ("Incorrect weather type, should be among fog" 
-                                   "thunder, pellets, glaze, smoke, wind, mist, rain, drizzle, snow") )
+                                   "thunder, pellets, glaze, smoke, wind, mist, "
+                                   "rain, drizzle, snow") )
         except ValueError:
             raise ValueError( "Incorrect weather input" )
+        return weather
 
     def searchRightWeather( self , weather_type ):
         weather = weather_type.get()
@@ -179,20 +192,11 @@ class Window(Frame):
             if weather in e:
                 weather = e
                 found = True
-        return found 
+        return weather , found 
 
+    # --- Crash & Weather-1 submit button triggers this function
     def submitCrashWeather( self , weather_type ):
-        self.validateWeatherType( weather_type )
-        weather = weather_type.get()
-        l =['is_foggy','is_foggy_heavy','is_thunder',
-            'is_ice_pellets','is_glaze_rime','is_smoke_haze', 
-            'is_damaging_wind','is_mist', 'is_drizzle', 'is_rainy', 
-            'is_snowy', 'is_unknown_precipitation',  'is_freezing_foggy']
-
-        for e in l:
-            if weather in e:
-                weather = e
-
+        weather = self.validateWeatherType( weather_type )
         query = '''SELECT num1/num2 ratio
                     FROM(
                     SELECT count(measure_date) num1
@@ -216,6 +220,7 @@ class Window(Frame):
         except ValueError:
             raise ValueError( "Incorrect precipitation input" )
 
+    # --- Crash & Weather-2 submit button triggers this function
     def submitCrashPrecipitation(  self , low , high , frame , myrow ):
         self.validatePrecipitationInput( low )
         self.validatePrecipitationInput( high )
@@ -262,6 +267,7 @@ class Window(Frame):
         my_button.grid( row = myrow , column = 0 , columnspan = 2 , 
                         pady = 10 , padx = 10, ipadx = 100 )
 
+    # --- Covid-1 button triggers this function
     def queryCovidByDateCounty( self , frame ) :
         self.clearChildren( frame )
 
@@ -281,6 +287,7 @@ class Window(Frame):
                             partial( self.submitCovidByDateCounty , date_entry , county_entry ) )
         self.setSubmitButton( my_submit , myrow )
 
+    # --- Covid-2 button triggers this function
     def queryCovidRankCases( self , frame ) :
         self.clearChildren( frame )
 
@@ -302,6 +309,7 @@ class Window(Frame):
         self.setSubmitButton( my_submit , myrow )
 
 
+    # --- Covid-3 button triggers this function
     def queryCovidPosRatio( self , frame ) :
         self.clearChildren( frame )
 
@@ -322,6 +330,7 @@ class Window(Frame):
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCovidPosRatio , date_start_entry , date_end_entry , county_entry ) )
         self.setSubmitButton( my_submit , myrow )
 
+    # --- Crash-1 button triggers this function
     def queryCrashFactor( self , frame ) :
         self.clearChildren( frame )
 
@@ -336,6 +345,7 @@ class Window(Frame):
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashFactor , limit_entry , frame , myrow ) )
         self.setSubmitButton( my_submit , myrow )
 
+    # --- Crash-2 button triggers this function
     def queryCrashRegion( self , frame ):
         self.clearChildren( frame )
         mytitle = '''Crash-2 Rank boroughs by number of crashes'''
@@ -351,6 +361,7 @@ class Window(Frame):
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashRegion, date_start_entry , date_end_entry ) )
         self.setSubmitButton( my_submit , myrow )
 
+    # --- Crash & Weather-1 button triggers this function
     def queryCrashWeather( self , frame ) :
         self.clearChildren( frame )
 
@@ -365,6 +376,7 @@ class Window(Frame):
         my_submit = Button( frame , text = "Submit" , command = partial( self.submitCrashWeather , type_entry ) )
         self.setSubmitButton( my_submit , myrow )
 
+    # --- Crash & Weather-2 button triggers this function
     def queryCrashPrecipitation( self , frame ) :
         self.clearChildren( frame )
 
