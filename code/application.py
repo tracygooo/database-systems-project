@@ -179,10 +179,10 @@ class Window(Frame):
         query = '''
                 SELECT count(COLLISION_ID)/tyw as ratio
                 FROM occurence, precipitation,(
-                SELECT count(measure_date) tyw
-                FROM precipitation
-                WHERE precipitation >= %s
-                AND precipitation <= %s) wyt
+                    SELECT count(measure_date) tyw
+                    FROM precipitation
+                    WHERE precipitation >= %s
+                    AND precipitation <= %s) wyt
                 WHERE precipitation >= %s
                 AND precipitation <= %s
                 AND crashdate = measure_date
