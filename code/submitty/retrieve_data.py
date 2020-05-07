@@ -22,6 +22,6 @@ for i in range( len(urls) ) :
 #for i in range( 0 , 2 ) :
     # Remove newline at the end
     url = urls[i].splitlines()[0]
-    print( "\n'{}' downloading: {}".format( output_fnames[i], datetime.now() ) )
+    print( "'{}' downloading: {}".format( output_fnames[i], datetime.now() ) )
     wget.download( url , data_path + output_fnames[i] )
-    print( "\n'{}' downloaded: {}".format( output_fnames[i] , datetime.now() ) )
+    print( "'{}' downloaded: {}\n".format( output_fnames[i] , datetime.now() ) )

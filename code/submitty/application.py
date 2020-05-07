@@ -52,12 +52,17 @@ class Window(Frame):
         print_records = tabulate( records , headers , tablefmt = "fancy_grid" )
         print( print_records )
         self.clearText()
-        #records_text = Text( self.bottom_right_frame , height = len(records) + 5, width = 60 )
-        #records_text.pack()
         self.records_text.insert( "1.0" , print_records )
         self.records_text.tag_add("center", "1.0", "end")
 
+    def validateDateInput( self , date_text):
+        try:
+            datetime.strptime(date_text, '%Y-%m-%d')
+        except ValueError:
+            raise ValueError( "Incorrect data format, should be YYYY-MM-DD" )
+
     def submitCovidByDateCounty( self , test_date , county ):
+        self.validateDateInput( test_date.get() )
         query = "SELECT * FROM covid19 WHERE testdate = %s and county ILIKE %s"
         self.cursor.execute( query , ( test_date.get() , county.get() ) )
         self.conn.commit()
@@ -68,6 +73,8 @@ class Window(Frame):
         self.outputRecords( records , headers )
 
     def submitCovidRankCases( self , start_date , end_date , limit ):
+        self.validateDateInput( start_date.get() )
+        self.validateDateInput( end_date.get() )
         query = "SELECT county, SUM(newpositives) "\
                 + "FROM covid19 WHERE testdate >= %s AND testdate <= %s "\
                 + "GROUP BY county " + \
@@ -80,6 +87,8 @@ class Window(Frame):
         self.outputRecords( records , headers )
 
     def submitCovidPosRatio( self , start_date , end_date , county ):
+        self.validateDateInput( start_date.get() )
+        self.validateDateInput( end_date.get() )
         query = '''
                 SELECT cast(sum(newpositives)::NUMERIC/sum(totalnumberoftestsperformed) as decimal(10,2))
                 FROM covid19
@@ -90,7 +99,7 @@ class Window(Frame):
         self.cursor.execute( query , ( start_date.get() , end_date.get() , county.get() ) )
         self.conn.commit()
         records = self.cursor.fetchall()
-        headers = [ 'Psotivity rate' ]
+        headers = [ 'Positivity rate' ]
         self.outputRecords( records , headers )
 
 
@@ -133,6 +142,8 @@ class Window(Frame):
         self.outputRecords( records , headers )
 
     def submitCrashRegion( self , start_date , end_date  ):
+        self.validateDateInput( start_date.get() )
+        self.validateDateInput( end_date.get() )
         query = '''
                 SELECT region , count(region) FROM occurence
                 WHERE region NOT LIKE '' AND 
@@ -147,8 +158,31 @@ class Window(Frame):
         headers = [ 'Borough', '# of crashes' ]
         self.outputRecords( records , headers )
 
-    def submitCrashWeather( self , weather_type ):
 
+    def validateWeatherType( self , weather_type ):
+        try:
+            if self.searchRightWeather( weather_type ) == False:
+                raise ValueError( '''Incorrect weather type, should be among fog , thunder,
+                                     pellets, glaze, smoke, wind, mist, rain, drizzle, snow''' )
+        except ValueError:
+            raise ValueError( "Incorrect data format" )
+
+    def searchRightWeather( self , weather_type ):
+        weather = weather_type.get()
+        l =['is_foggy','is_foggy_heavy','is_thunder',
+            'is_ice_pellets','is_glaze_rime','is_smoke_haze', 
+            'is_damaging_wind','is_mist', 'is_drizzle', 'is_rainy', 
+            'is_snowy', 'is_unknown_precipitation',  'is_freezing_foggy']
+
+        found = False
+        for e in l:
+            if weather in e:
+                weather = e
+                found = True
+        return found 
+
+    def submitCrashWeather( self , weather_type ):
+        self.validateWeatherType( weather_type )
         weather = weather_type.get()
         l =['is_foggy','is_foggy_heavy','is_thunder',
             'is_ice_pellets','is_glaze_rime','is_smoke_haze', 
