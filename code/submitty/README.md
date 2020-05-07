@@ -11,6 +11,7 @@ This project created a Postgres database based on three public datasets: [Motor 
 - `schema.sql`: Create three temporary tables for the three datasets
 - `table.sql`: Create the tables for the database and then drop the temporary tables created by `schema.sql`
 - `application.py`: Create a user interface for users' interaction with database, the extracted information is displayed both on terminal and UI
+- `video.txt`: The link for video presentation
 
 ### 3. How to run the code
 1. Setup the database
