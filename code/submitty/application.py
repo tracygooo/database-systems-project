@@ -162,10 +162,10 @@ class Window(Frame):
     def validateWeatherType( self , weather_type ):
         try:
             if self.searchRightWeather( weather_type ) == False:
-                raise ValueError( '''Incorrect weather type, should be among fog , thunder,
-                                     pellets, glaze, smoke, wind, mist, rain, drizzle, snow''' )
+                raise ValueError( ("Incorrect weather type, should be among fog" 
+                                   "thunder, pellets, glaze, smoke, wind, mist, rain, drizzle, snow") )
         except ValueError:
-            raise ValueError( "Incorrect data format" )
+            raise ValueError( "Incorrect weather input" )
 
     def searchRightWeather( self , weather_type ):
         weather = weather_type.get()
@@ -209,7 +209,16 @@ class Window(Frame):
         headers = [ 'Ave num of crashes in {}'.format( weather_type.get() )  ]
         self.outputRecords( records , headers )
 
+    def validatePrecipitationInput( self , prcp ):
+        try:
+            if prcp.get().isdigit() == False:
+                raise ValueError( 'Precipitation limit should be digits' ) 
+        except ValueError:
+            raise ValueError( "Incorrect precipitation input" )
+
     def submitCrashPrecipitation(  self , low , high , frame , myrow ):
+        self.validatePrecipitationInput( low )
+        self.validatePrecipitationInput( high )
         query = '''
                 SELECT count(COLLISION_ID)/tyw as ratio
                 FROM occurence, precipitation,(
