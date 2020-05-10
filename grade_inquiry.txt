@@ -3,10 +3,10 @@ Thank you very much for your detailed comments on our project. We have two quest
 
 1. The schema design and definition: 
     For the weather dataset, as you said, the original dataset do contain data from two stations. But we intentionally removed the data from station "US1NYNY0074" as it only contains weather data starting from 2018-07-13 which doesn't match with the date range (2012-present) of our crash dataset. Furthermore, the data it has are very sparse covering only a couple of attributes which is not helpful to our application.
-    For the crash dataset, we do use collision id as the primary key for each subtable. The reason behind this is most of the attributes are independent with each other. If we removed the collision id, it turns out that the key of the table most likely has to take all attributes in it. 
+    For the crash dataset, we split the original large table into small ones to enable the query to respond faster. We do use collision id as the primary key for each subtable. The reason behind this is most of the attributes are independent with each other. If we removed the collision id, it turns out that the key of the table most likely has to take all attributes in it. 
     We should point this out in our README.md file. But is it possible at all right now we can get some points back? 
 
 2. Data loading:
     The inappropriate schema definition (specifically in our file 'table.sql') leads to the incompleteness of our eventual schema. But since we have got punished in the schema part, we were wondering if we could get the deducted points back as data loading is logically consistent with the schema we defined?   
 
-Thanks again and we appologize for the inconvinience bringing to you.
+We took a lot of time to make our User Interface friendly and robust enough and apparently we were not on the right track to get a high grade. Thanks again and we appologize for the inconvinience bringing to you.
