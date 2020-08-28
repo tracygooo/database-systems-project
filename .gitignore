@@ -2,3 +2,4 @@ git.sh
 project-env
 *.csv
 *.mp4
+grade*.txt

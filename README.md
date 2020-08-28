@@ -1,6 +1,7 @@
 ## Spring 2020 CSCI-4380 Database Systems Final Project
 ### 1. General description
 This project created a Postgres database based on three public datasets: [Motor vehicle collisions of New York City](https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95), [Climate daily summaries of New York City](https://www.ncdc.noaa.gov/cdo-web/datasets), and [COVID-19 Testing in New York State](https://health.data.ny.gov/Health/New-York-State-Statewide-COVID-19-Testing/xdss-u53e/data). The GUI module Tkinter is applied to facilitate users' exploration and interaction with the database.
+![](images/database.gif)
 
 ### 2. Code organization
 - `db-setup.sql`: Create database with specified user and user password
